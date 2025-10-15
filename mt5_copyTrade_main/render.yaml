@@ -1,0 +1,36 @@
+# render.yaml (for Render.com deployment)
+services:
+  # Backend API
+  - type: web
+    name: mt5-copytrade-backend
+    env: python
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: MONGODB_URL
+        fromDatabase:
+          name: mt5-copytrade-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+    
+  # Frontend (Next.js)
+  - type: web
+    name: mt5-copytrade-frontend
+    env: node
+    buildCommand: "cd frontend && npm install && npm run build"
+    startCommand: "cd frontend && npm start"
+    envVars:
+      - key: NODE_VERSION
+        value: 18.18.0
+      - key: NEXT_PUBLIC_API_URL
+        value: https://mt5-copytrade.onrender.com
+
+databases:
+  - name: mt5-copytrade-db
+    databaseName: mt5_copytrade
+    user: mt5user
